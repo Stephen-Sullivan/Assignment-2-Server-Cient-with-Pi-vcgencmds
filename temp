@@ -1,0 +1,33 @@
+import socket
+import json
+import subprocess
+
+# Core temperature
+def get_temperature():
+    temp_output = subprocess.run(['vcgencmd', 'measure_temp'], stdout=subprocess.PIPE)
+    temp_str = temp_output.stdout.decode('utf-8').strip()
+    # Extract the numeric value, convert to float, round to one decimal place, and add the Celsius symbol
+    temp = float(temp_str.replace('temp=', '').replace('\'C', ''))
+    return f"{round(temp, 1)}\u00B0C"
+
+s = socket.socket()
+host = '1.1.1.1'  # Replace with your Raspberry Pi IP address
+port = 5001
+s.bind((host, port))
+s.listen(5)
+
+print(f"Server listening on {host}:{port}")
+
+while True:
+    c, addr = s.accept()
+    print('Got connection from', addr)
+    
+    
+    json_data = json.dumps({
+        "Temperature": temp,
+    }, indent=4)  # Added indent for pretty-printing
+    
+    # Sending json data
+    c.sendall(bytes(json_data, 'utf-8'))
+    c.close()
+
