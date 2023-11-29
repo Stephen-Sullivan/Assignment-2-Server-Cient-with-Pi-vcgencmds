@@ -10,6 +10,16 @@ def get_temperature():
     temp = float(temp_str.replace('temp=', '').replace('\'C', ''))
     return f"{round(temp, 1)}\u00B0C"
 
+
+# Core voltage
+def get_voltage():
+    volt_output = subprocess.run(['vcgencmd', 'measure_volts', 'core'], stdout=subprocess.PIPE)
+    volt_str = volt_output.stdout.decode('utf-8').strip()
+    # Extract the numeric value, convert to float, round to one decimal place, and add the V symbol
+    volt = float(volt_str.replace('volt=', '').replace('V', ''))
+    return f"{round(volt, 1)}V"
+
+
 s = socket.socket()
 host = '1.1.1.1'  # Replace with your Raspberry Pi IP address
 port = 5001
@@ -21,10 +31,12 @@ print(f"Server listening on {host}:{port}")
 while True:
     c, addr = s.accept()
     print('Got connection from', addr)
-    
+    temp = get_temperature()
+    volt = get_voltage()
     
     json_data = json.dumps({
         "Temperature": temp,
+        "Voltage": volt,
     }, indent=4)  # Added indent for pretty-printing
     
     # Sending json data
