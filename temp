@@ -20,6 +20,23 @@ def get_voltage():
     return f"{round(volt, 1)}V"
 
 
+# ARM CPU clock speed
+def get_clockspeed():
+    clock_speed_output = subprocess.run(['vcgencmd', 'measure_clock', 'arm'], stdout=subprocess.PIPE)
+    clock_str = clock_speed_output.stdout.decode('utf-8').strip()
+    # Convert Hz to GHz, round to one decimal place
+    clock = float(clock_str.split('=')[1]) / 1e9
+    return f"{round(clock, 1)}GHz"
+
+# HDMI clock speed
+def get_hdmi_clockspeed():
+    hdmi_clock_output = subprocess.run(['vcgencmd', 'measure_clock', 'hdmi'], stdout=subprocess.PIPE)
+    hdmi_clock_str = hdmi_clock_output.stdout.decode('utf-8').strip()
+    # Convert Hz to GHz, round to one decimal place
+    hdmi_clock = float(hdmi_clock_str.split('=')[1]) / 1e9
+    return f"{round(hdmi_clock, 1)}GHz"
+
+
 s = socket.socket()
 host = '1.1.1.1'  # Replace with your Raspberry Pi IP address
 port = 5001
@@ -33,10 +50,14 @@ while True:
     print('Got connection from', addr)
     temp = get_temperature()
     volt = get_voltage()
-    
+    clock = get_clockspeed()
+    hdmi_clock = get_hdmi_clockspeed()
+
     json_data = json.dumps({
         "Temperature": temp,
         "Voltage": volt,
+        "CPU Clock Speed": clock,
+        "HDMI Clock Speed": hdmi_clock
     }, indent=4)  # Added indent for pretty-printing
     
     # Sending json data
